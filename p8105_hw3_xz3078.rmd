@@ -1,0 +1,77 @@
+---
+title: "p8105_hw3_xz3078"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+## Problem 1
+
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+This dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns with variable names `r colnames(instacart)`. Among these variables, "add_to_cart_order" is order in which each product was added to cart; "reordered" is a dummy variable equals 1 if this prodcut has been ordered by this user in the past, and 0 otherwise; "order_number" is the order sequence number for this user; "order_dow" is the day of the week on which the order was placed; "order_hour_of_day" is the hour of the day on which the order was placed; "days_since_prior_order" is days since the last order, capped at 30, NA if order_number=1. 
+
+For example, the first row in "instacart" means the order id is 1; the product id is 49302; it's the first item added to the cart; it has been ordered by this user before; the user id is 112108; this order belongs in "train" evaluation set; the order sequence number for this user is 4; the order is placed on Thursday 10am; 9 days since the last order; the product is Bulgarian Yogurt; the aisle is yogurt with id 120; the department is dairy eggs with id 16. 
+
+```{r}
+instacart %>%
+  summarize(
+    n_aisle = n_distinct(aisle))
+
+instacart %>%
+  group_by(aisle) %>%
+  summarize(
+    n_obs = n()) %>%
+  arrange(desc(n_obs))
+```
+
+There are 134 aisles, and fresh vegetables is the most items ordered from. 
+
+```{r}
+instacart %>%
+  group_by(aisle) %>%
+  summarize(
+    n_obs = n()) %>%
+  filter(n_obs > 10000) %>%
+  ggplot(aes(x = reorder(aisle, -n_obs), y= n_obs)) + 
+    geom_point() +
+  labs(y = "number of items ordered",
+       x = "aisle") +
+  theme(axis.text.x = element_text(angle=90, hjust=1))
+```
+
+There are 39 aisles with more than 10000 items ordered. The aisles with the most items ordered are fresh vegetables, fresh fruits, and packaged vegetables fruits. 
+
+```{r}
+instacart %>%
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>%
+  group_by(aisle) %>%
+  count(product_name, name = "n_product") %>%
+  slice_max(n_product, n=3)
+```
+
+The three most popular items in “baking ingredients” are "Light Brown Sugar" with 499 items, "Pure Baking Soda" 387 items, and "Cane Sugar" with 336 items. The three most popular items in “dog food care” are "Snack Sticks Chicken & Rice Recipe Dog Treats" with 30 items, "Organix Chicken & Brown Rice Recipe" with 28 items, and "Small Dog Biscuits" with 26 items. The three most popular items in “packaged vegetables fruits” are "Organic Baby Spinach" 9784 items, "Organic Raspberries" 5546 items, and "Organic Blueberries" with 4966 items.
+
+```{r}
+instacart %>%
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>%
+  select(product_name, order_dow, order_hour_of_day) %>%
+  group_by(product_name, order_dow) %>%
+  summarize(mean_hod = mean(order_hour_of_day)) %>%
+  pivot_wider(
+    names_from = "order_dow", 
+    values_from = "mean_hod"
+  ) %>%
+  rename(Sunday = "0", Monday = "1", Tuesday = "2", Wednesday = "3", Thursday = "4", Friday = "5", Saturday = "6")
+```
+
+The mean hour of the day at which Coffee Ice Cream are ordered from Sunday to Saturday are 13.7, 14.3, 15.4, 15.3, 15.2, 12.3, and 13.8. The mean hour of the day at which Pink Lady Apples are ordered from Sunday to Saturday are 13.4, 11.4, 11.7, 14.3, 11.6, 12.8, and 11.9. 
+
+## Problem 2
+
+
