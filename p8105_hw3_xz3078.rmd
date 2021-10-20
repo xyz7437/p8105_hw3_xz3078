@@ -70,8 +70,76 @@ instacart %>%
   rename(Sunday = "0", Monday = "1", Tuesday = "2", Wednesday = "3", Thursday = "4", Friday = "5", Saturday = "6")
 ```
 
-The mean hour of the day at which Coffee Ice Cream are ordered from Sunday to Saturday are 13.7, 14.3, 15.4, 15.3, 15.2, 12.3, and 13.8. The mean hour of the day at which Pink Lady Apples are ordered from Sunday to Saturday are 13.4, 11.4, 11.7, 14.3, 11.6, 12.8, and 11.9. 
+The mean hour of the day at which Coffee Ice Cream are ordered from Sunday to Saturday are 13.7, 14.3, 15.4, 15.3, 15.2, 12.3, and 13.8. The mean hour of the day at which Pink Lady Apples are ordered from Sunday to Saturday are 13.4, 11.4, 11.7, 14.3, 11.6, 12.8, and 11.9.
 
 ## Problem 2
+
+```{r}
+library(p8105.datasets)
+data("brfss_smart2010")
+```
+
+```{r}
+brfss = 
+  brfss_smart2010 %>%
+  janitor::clean_names() %>% 
+  rename(state = locationabbr, location = locationdesc) %>%
+  filter(topic == "Overall Health") %>%
+  filter(response %in% c("Poor", "Fair", "Good", "Very good", "Excellent")) %>%
+  mutate(response = ordered(response, levels = c("Poor", "Fair", "Good", "Very good", "Excellent"))) 
+```
+
+```{r}
+brfss %>%
+  filter(year == 2002) %>%
+  group_by(state) %>%
+  summarize(
+    n_location = n_distinct(location)) %>%
+  filter(n_location >= 7)
+
+brfss %>%
+  filter(year == 2010) %>%
+  group_by(state) %>%
+  summarize(
+    n_location = n_distinct(location)) %>%
+  filter(n_location >= 7)
+```
+
+In 2002, CT, FL, MA, NC, NJ, PA were observed at 7 or more locations. In 2010, CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, WA were observed at 7 or more locations.
+
+```{r}
+brfss %>%
+  filter(response == "Excellent") %>%
+  group_by(state, year) %>%
+  mutate(mean_value = mean(data_value, na.rm = TRUE)) %>%
+  select(year, state, mean_value) %>%
+  distinct() %>%
+  ggplot(aes(x = year, y = mean_value, color = state)) + 
+    geom_line(alpha = .5)
+```
+
+We can see from the plot that there is a downward trend for the mean data value for all states. 
+
+```{r}
+brfss %>%
+  filter(year %in% c(2006, 2010), state == "NY") %>%
+  group_by(year, response) %>%
+  drop_na(data_value) %>%
+  ggplot(aes(x = response, y = data_value)) + 
+    geom_point() +
+    facet_grid(. ~ year)
+```
+
+Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+
+## Problem 3
+
+```{r}
+accel=
+  read_csv("./data/accel_data.csv") %>%
+  janitor::clean_names() 
+```
+
+
 
 
